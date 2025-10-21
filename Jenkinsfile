@@ -4,28 +4,36 @@ pipeline {
   environment {
     DOCKERHUB_USER = 'dineshpardhu1'
     IMAGE = "${DOCKERHUB_USER}/sample-app"
-    TAG = "build-${env.BUILD_NUMBER}"
+    TAG = "build-${BUILD_NUMBER}"
     KUBECONFIG = "/var/lib/jenkins/.kube/config"
   }
 
   stages {
     stage('Checkout') {
-      steps { checkout scm }
+      steps {
+        echo "📥 Checking out source code from GitHub..."
+        checkout scm
+      }
     }
 
     stage('Build Docker Image') {
       steps {
-        sh 'docker build -t $IMAGE:$TAG .'
+        echo "🐳 Building Docker image: $IMAGE:$TAG"
+        sh '''
+          docker version
+          docker build -t $IMAGE:$TAG .
+        '''
       }
     }
 
     stage('Push to Docker Hub') {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
-                                         usernameVariable: 'USER',
-                                         passwordVariable: 'PASS')]) {
+        echo "📦 Pushing Docker image to Docker Hub..."
+        withCredentials([usernamePassword(credentialsId: 'dockerhub',
+                                         usernameVariable: 'DOCKER_USER',
+                                         passwordVariable: 'DOCKER_PASS')]) {
           sh '''
-            echo "$PASS" | docker login -u "$USER" --password-stdin
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
             docker push $IMAGE:$TAG
             docker logout
           '''
@@ -34,27 +42,37 @@ pipeline {
     }
 
     stage('Deploy to EKS') {
-            steps {
-                sh '''
-                    echo "Deploying to EKS..."
+      steps {
+        echo "🚀 Deploying to EKS..."
+        sh '''
+          echo "Using kubeconfig at $KUBECONFIG"
+          kubectl config get-contexts
 
-                    # Apply manifests (for first-time deployment)
-                    kubectl apply -f k8s/deployment.yaml
-                    kubectl apply -f k8s/service.yaml
-                    kubectl apply -f k8s/ingress.yaml
+          # Apply manifests
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/ingress.yaml
 
-                    # Update deployment image to latest build tag
-                    kubectl set image deployment/sample-app-deployment sample-app=$IMAGE:$TAG --record
+          # Update deployment image
+          kubectl set image deployment/sample-app-deployment sample-app=$IMAGE:$TAG --record
 
-                    # Wait for rollout to complete
-                    kubectl rollout status deployment/sample-app-deployment
-                '''
-            }
-        }
+          # Wait for rollout
+          kubectl rollout status deployment/sample-app-deployment
+        '''
+      }
     }
+  }
 
   post {
-    success { echo "✅ Image pushed: $IMAGE:$TAG" }
-    failure { echo "❌ Build failed" }
+    success {
+      echo "✅ Build & Deployment Successful!"
+      echo "✅ Docker Image: $IMAGE:$TAG"
+    }
+    failure {
+      echo "❌ Build or Deployment Failed!"
+    }
+    always {
+      echo "🏁 Pipeline completed."
+    }
   }
 }
