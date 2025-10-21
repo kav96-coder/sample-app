@@ -1,27 +1,60 @@
 pipeline {
   agent any
+
   environment {
-    ECR_REPO = "${env.ECR_REPO ?: "sample-app-repo"}"
-    IMAGE_TAG = "${env.BUILD_NUMBER ?: "latest"}"
+    DOCKERHUB_USER = 'dineshpardhu-210'
+    IMAGE = "${DOCKERHUB_USER}/sample-app"
+    TAG = "build-${env.BUILD_NUMBER}"
+    KUBECONFIG = "/var/lib/jenkins/.kube/config"
   }
+
   stages {
-    stage('Checkout') { steps { checkout scm } }
-    stage('Build') { steps { sh 'docker build -t sample-app:${IMAGE_TAG} .' } }
-    stage('Push') {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+
+    stage('Build Docker Image') {
       steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
+        sh 'docker build -t $IMAGE:$TAG .'
+      }
+    }
+
+    stage('Push to Docker Hub') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                                         usernameVariable: 'USER',
+                                         passwordVariable: 'PASS')]) {
           sh '''
-            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-            docker tag sample-app:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
-            docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+            echo "$PASS" | docker login -u "$USER" --password-stdin
+            docker push $IMAGE:$TAG
+            docker logout
           '''
         }
       }
     }
-    stage('Deploy') {
-      steps {
-        sh 'kubectl set image deployment/sample-app sample-app=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG} --record || true'
-      }
+
+    stage('Deploy to EKS') {
+            steps {
+                sh '''
+                    echo "Deploying to EKS..."
+
+                    # Apply manifests (for first-time deployment)
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
+                    kubectl apply -f k8s/ingress.yaml
+
+                    # Update deployment image to latest build tag
+                    kubectl set image deployment/sample-app-deployment sample-app=$IMAGE:$TAG --record
+
+                    # Wait for rollout to complete
+                    kubectl rollout status deployment/sample-app-deployment
+                '''
+            }
+        }
     }
+
+  post {
+    success { echo "✅ Image pushed: $IMAGE:$TAG" }
+    failure { echo "❌ Build failed" }
   }
 }
