@@ -29,7 +29,7 @@ module "iam" {
 
 module "jenkins" {
   source               = "./modules/jenkins_instance"
-  ami                  = "ami-053b0d53c279acc90"   # ✅ Ubuntu 22.04 LTS (us-east-1)
+  ami                  = "ami-053b0d53c279acc90" # ✅ Ubuntu 22.04 LTS (us-east-1)
   instance_type        = var.jenkins_instance_type
   private_subnet_ids   = module.vpc.private_subnet_ids
   iam_instance_profile = module.iam.jenkins_instance_profile
@@ -42,7 +42,7 @@ module "jenkins" {
 
 module "eks" {
   source              = "./modules/eks"
-  name                = var.name
+  cluster_name        = var.name
   public_subnet_ids   = module.vpc.public_subnet_ids
   private_subnet_ids  = module.vpc.private_subnet_ids
   node_instance_types = var.eks_node_instance_types

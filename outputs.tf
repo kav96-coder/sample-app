@@ -15,5 +15,5 @@ output "eks_cluster_name" {
 }
 
 output "eks_oidc_provider" {
-  value = module.eks.oidc_provider
+  value = module.eks.oidc_provider_arn
 }
