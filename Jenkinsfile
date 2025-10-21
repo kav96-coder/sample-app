@@ -57,7 +57,7 @@ pipeline {
           kubectl set image deployment/sample-app sample-app=$IMAGE:$TAG --record
 
           # Wait for rollout
-          kubectl rollout status deployment/sample-app-deployment
+          kubectl rollout status deployment/sample-app
         '''
       }
     }
