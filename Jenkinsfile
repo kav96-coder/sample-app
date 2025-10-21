@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    DOCKERHUB_USER = 'dineshpardhu-210'
+    DOCKERHUB_USER = 'dineshpardhu1'
     IMAGE = "${DOCKERHUB_USER}/sample-app"
     TAG = "build-${env.BUILD_NUMBER}"
     KUBECONFIG = "/var/lib/jenkins/.kube/config"
