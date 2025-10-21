@@ -21,7 +21,7 @@ pipeline {
         echo "🐳 Building Docker image: $IMAGE:$TAG"
         sh '''
           docker version
-          docker build -t $IMAGE:$TAG .
+          docker build -t $IMAGE:$TAG -f app/Dockerfile app/
         '''
       }
     }
