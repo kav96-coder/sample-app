@@ -5,9 +5,10 @@ metadata:
   labels:
     app: sample-app
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: sample-app
   ports:
-  - port: 80
-    targetPort: 3000
+    - port: 80              # External port (publicly exposed)
+      targetPort: 3000      # Port your container listens on
+      protocol: TCP
