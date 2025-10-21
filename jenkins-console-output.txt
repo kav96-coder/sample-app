@@ -1,0 +1,218 @@
+Started by user dineshpardhu
+Obtained Jenkinsfile from git https://github.com/dineshpardhu-210/sample-app.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/workspace/sample-app-v1
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+using credential github-token
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/sample-app-v1/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/dineshpardhu-210/sample-app.git # timeout=10
+Fetching upstream changes from https://github.com/dineshpardhu-210/sample-app.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.34.1'
+using GIT_ASKPASS to set credentials 
+ > git fetch --tags --force --progress -- https://github.com/dineshpardhu-210/sample-app.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision 8febdfeec29ca4beb89e47ce8e85390888e1af94 (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 8febdfeec29ca4beb89e47ce8e85390888e1af94 # timeout=10
+Commit message: "made changes to jenkinsfile"
+ > git rev-list --no-walk f7c15d98b129cff4b4c71cf838ca6775230831da # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout)
+[Pipeline] echo
+📥 Checking out source code from GitHub...
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+using credential github-token
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/sample-app-v1/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/dineshpardhu-210/sample-app.git # timeout=10
+Fetching upstream changes from https://github.com/dineshpardhu-210/sample-app.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.34.1'
+using GIT_ASKPASS to set credentials 
+ > git fetch --tags --force --progress -- https://github.com/dineshpardhu-210/sample-app.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision 8febdfeec29ca4beb89e47ce8e85390888e1af94 (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 8febdfeec29ca4beb89e47ce8e85390888e1af94 # timeout=10
+Commit message: "made changes to jenkinsfile"
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build Docker Image)
+[Pipeline] echo
+🐳 Building Docker image: dineshpardhu1/sample-app:build-22
+[Pipeline] sh
++ docker version
+Client: Docker Engine - Community
+ Version:           28.5.1
+ API version:       1.51
+ Go version:        go1.24.8
+ Git commit:        e180ab8
+ Built:             Wed Oct  8 12:17:03 2025
+ OS/Arch:           linux/amd64
+ Context:           default
+
+Server: Docker Engine - Community
+ Engine:
+  Version:          28.5.1
+  API version:      1.51 (minimum version 1.24)
+  Go version:       go1.24.8
+  Git commit:       f8215cc
+  Built:            Wed Oct  8 12:17:03 2025
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          v1.7.28
+  GitCommit:        b98a3aace656320842a23f4a392a33f46af97866
+ runc:
+  Version:          1.3.0
+  GitCommit:        v1.3.0-0-g4ca628d1
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0
++ docker build -t dineshpardhu1/sample-app:build-22 -f app/Dockerfile app/
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 171B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:18-alpine
+#2 DONE 0.1s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 119B done
+#5 DONE 0.0s
+
+#6 [3/5] COPY package*.json ./
+#6 CACHED
+
+#7 [2/5] WORKDIR /app
+#7 CACHED
+
+#8 [4/5] RUN npm install --production
+#8 CACHED
+
+#9 [5/5] COPY . .
+#9 CACHED
+
+#10 exporting to image
+#10 exporting layers done
+#10 writing image sha256:8fb5b37fc48e2ee4ebcb70f898c7921ce799c5d1de9ef139b7bedd7a9c0cf911 done
+#10 naming to docker.io/dineshpardhu1/sample-app:build-22 done
+#10 DONE 0.0s
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Push to Docker Hub)
+[Pipeline] echo
+📦 Pushing Docker image to Docker Hub...
+[Pipeline] withCredentials
+Masking supported pattern matches of $DOCKER_PASS
+[Pipeline] {
+[Pipeline] sh
++ echo ****
++ docker login -u dineshpardhu1 --password-stdin
+
+WARNING! Your credentials are stored unencrypted in '/var/lib/jenkins/.docker/config.json'.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/go/credential-store/
+
+Login Succeeded
++ docker push dineshpardhu1/sample-app:build-22
+The push refers to repository [docker.io/dineshpardhu1/sample-app]
+c57f55fbc5c3: Preparing
+74a17adc548c: Preparing
+418a58709e09: Preparing
+5fe34eda1e2b: Preparing
+82140d9a70a7: Preparing
+f3b40b0cdb1c: Preparing
+0b1f26057bd0: Preparing
+08000c18d16d: Preparing
+f3b40b0cdb1c: Waiting
+0b1f26057bd0: Waiting
+08000c18d16d: Waiting
+c57f55fbc5c3: Layer already exists
+82140d9a70a7: Layer already exists
+5fe34eda1e2b: Layer already exists
+418a58709e09: Layer already exists
+74a17adc548c: Layer already exists
+0b1f26057bd0: Layer already exists
+f3b40b0cdb1c: Layer already exists
+08000c18d16d: Layer already exists
+build-22: digest: sha256:96a7e10eec7f520db333e4f0fa5aadc90dba42c79a29a3e573d28aa0b02c5602 size: 1985
++ docker logout
+Removing login credentials for https://index.docker.io/v1/
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Deploy to EKS)
+[Pipeline] echo
+🚀 Deploying to EKS...
+[Pipeline] sh
++ echo Using kubeconfig at /var/lib/jenkins/.kube/config
+Using kubeconfig at /var/lib/jenkins/.kube/config
++ kubectl config get-contexts
+CURRENT   NAME                                                    CLUSTER                                                 AUTHINFO                                                NAMESPACE
+*         arn:aws:eks:us-east-1:640650870392:cluster/sample-app   arn:aws:eks:us-east-1:640650870392:cluster/sample-app   arn:aws:eks:us-east-1:640650870392:cluster/sample-app   
++ kubectl apply -f k8s/deployment.yaml
+deployment.apps/sample-app configured
++ kubectl apply -f k8s/service.yaml
+ingress.networking.k8s.io/sample-app-ingress configured
++ kubectl apply -f k8s/ingress.yaml
+service/sample-app-svc configured
++ kubectl set image deployment/sample-app sample-app=dineshpardhu1/sample-app:build-22 --record
+Flag --record has been deprecated, --record will be removed in the future
+deployment.apps/sample-app image updated
++ kubectl rollout status deployment/sample-app
+Waiting for deployment "sample-app" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "sample-app" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "sample-app" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "sample-app" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "sample-app" rollout to finish: 1 old replicas are pending termination...
+deployment "sample-app" successfully rolled out
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] echo
+🏁 Pipeline completed.
+[Pipeline] echo
+✅ Build & Deployment Successful!
+[Pipeline] echo
+✅ Docker Image: dineshpardhu1/sample-app:build-22
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS
