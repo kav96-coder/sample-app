@@ -6,7 +6,6 @@ pipeline {
     IMAGE = "${DOCKERHUB_USER}/sample-app"
     TAG = "build-${BUILD_NUMBER}"
     KUBECONFIG = "/var/lib/jenkins/.kube/config"
-    DOCKER_HOST = "unix:///Users/sandeepkavya/.docker/run/docker.sock"  // macOS Docker socket
   }
 
   stages {
@@ -17,12 +16,23 @@ pipeline {
       }
     }
 
+    stage('Wait for Docker') {
+      steps {
+        echo "⏳ Ensuring Docker daemon is running..."
+        sh '''
+          until docker info >/dev/null 2>&1; do
+            echo "Docker not ready yet, waiting..."
+            sleep 3
+          done
+          echo "Docker is running!"
+        '''
+      }
+    }
+
     stage('Build Docker Image') {
       steps {
         echo "🐳 Building Docker image: $IMAGE:$TAG"
         sh '''
-          echo "Using Docker Host: $DOCKER_HOST"
-          docker version
           docker build -t $IMAGE:$TAG -f app/Dockerfile app/
         '''
       }
@@ -31,7 +41,7 @@ pipeline {
     stage('Push to Docker Hub') {
       steps {
         echo "📦 Pushing Docker image to Docker Hub..."
-        withCredentials([usernamePassword(credentialsId: 'docker-hub-cred',
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-cred',
                                          usernameVariable: 'DOCKER_USER',
                                          passwordVariable: 'DOCKER_PASS')]) {
           sh '''
